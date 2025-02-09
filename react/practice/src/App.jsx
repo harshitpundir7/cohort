@@ -15,7 +15,7 @@ function App() {
     console.log(intervalRef.current);
     clearInterval(intervalRef.current);
     intervalRef.current = null;  // This is the correct way
-  }
+  }  
   return (
     <>
     <div>
