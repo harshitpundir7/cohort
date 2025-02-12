@@ -1,0 +1,13 @@
+1.  fix MONGOURI in Config File
+2. fix JWTSECRT also
+3. what is this and why we use this in middleware 
+declare global{
+    namespace Express{
+        interface Request {
+            user?:{
+                userId: string;
+            }
+        }
+    }
+}
+4. 
