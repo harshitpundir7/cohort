@@ -26,7 +26,10 @@ export const verifyToken = async (
         }
 
         try {
-            const decoded = jwt.verify(token, process.env.JWTSECRET!) as {
+            if(!process.env.JWTSECRET){
+                throw new Error("JWT SECRET NOT FOUND")
+            }
+            const decoded = jwt.verify(token, process.env.JWTSECRET) as {
                 userId: string;
             };
             req.user = decoded;

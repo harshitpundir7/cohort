@@ -10,4 +10,4 @@ declare global{
         }
     }
 }
-4. 
+4. fix content/check-auth to /user/check-auth

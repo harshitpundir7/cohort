@@ -19,62 +19,79 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { name, email, password } = req.body;
-    const exist = yield userSchema_1.userModel.findOne({ email });
-    if (exist) {
-        res.json({ message: "User Already exist" });
-        return;
-    }
-    else {
-        const salt = yield bcrypt_1.default.genSalt(10);
-        const hashPassword = yield bcrypt_1.default.hash(password, salt);
-        const newUser = yield userSchema_1.userModel.create({
-            name,
-            email,
-            password: hashPassword
-        });
-        console.log(process.env.JWTSECRET);
-        const token = jsonwebtoken_1.default.sign({ userId: newUser._id }, process.env.JWTSECRET, { expiresIn: "1h" });
-        res.cookie('token', token, {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'strict',
-            maxAge: 3600000
-        });
-        res.status(201).json({
-            message: "User signed in Successfully"
-        });
-    }
-});
-exports.signUp = signUp;
-const signIn = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email, password } = req.body;
-    const exist = yield userSchema_1.userModel.findOne({ email });
-    if (exist) {
-        try {
-            const validPass = yield bcrypt_1.default.compare(password, exist.password);
-            if (!validPass) {
-                res.json({ message: "Password is invalid" });
-                return;
-            }
-            const token = jsonwebtoken_1.default.sign({ userId: exist._id }, process.env.JWTSECRET, { expiresIn: "7d" });
+    try {
+        const { name, email, password } = req.body;
+        if (!password) {
+            res.status(400).json({ message: "Password is required" });
+            return;
+        }
+        console.log("Password received:", password);
+        const exist = yield userSchema_1.userModel.findOne({ email });
+        if (exist) {
+            res.json({ message: "User Already exist" });
+            return;
+        }
+        else {
+            const salt = yield bcrypt_1.default.genSalt(10);
+            const hashPassword = yield bcrypt_1.default.hash(password, salt);
+            const newUser = yield userSchema_1.userModel.create({
+                name,
+                email,
+                password: hashPassword
+            });
+            const token = jsonwebtoken_1.default.sign({ userId: newUser._id }, process.env.JWTSECRET, { expiresIn: "1h" });
             res.cookie('token', token, {
                 httpOnly: true,
                 secure: true,
                 sameSite: 'strict',
                 maxAge: 3600000
             });
-            res.status(201).json({ message: "You Logged in" });
-            return;
-        }
-        catch (error) {
-            console.log(error);
-            res.status(500).json({ message: "Internal server error" });
+            res.status(201).json({ message: "User signed in Successfully" });
             return;
         }
     }
-    else {
-        res.status(404).json({ message: "User not found" });
+    catch (error) {
+        console.log("Error in signUp:", error);
+        res.status(500).json({ message: "Internal server error" });
+        return;
+    }
+});
+exports.signUp = signUp;
+const signIn = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { email, password } = req.body;
+        const exist = yield userSchema_1.userModel.findOne({ email });
+        if (exist) {
+            try {
+                const validPass = yield bcrypt_1.default.compare(password, exist.password);
+                if (!validPass) {
+                    res.json({ message: "Password is invalid" });
+                    return;
+                }
+                const token = jsonwebtoken_1.default.sign({ userId: exist._id }, process.env.JWTSECRET, { expiresIn: "7d" });
+                res.cookie('token', token, {
+                    httpOnly: true,
+                    secure: true,
+                    sameSite: 'strict',
+                    maxAge: 3600000
+                });
+                res.status(201).json({ message: "You Logged in" });
+                return;
+            }
+            catch (error) {
+                console.log(error);
+                res.status(500).json({ message: "Internal server error" });
+                return;
+            }
+        }
+        else {
+            res.status(404).json({ message: "User not found" });
+            return;
+        }
+    }
+    catch (error) {
+        console.log("Error in signUp:", error);
+        res.status(500).json({ message: "Internal server error" });
         return;
     }
 });

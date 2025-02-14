@@ -24,6 +24,9 @@ const verifyToken = (req, res, next) => __awaiter(void 0, void 0, void 0, functi
             return;
         }
         try {
+            if (!process.env.JWTSECRET) {
+                throw new Error("JWT SECRET NOT FOUND");
+            }
             const decoded = jsonwebtoken_1.default.verify(token, process.env.JWTSECRET);
             req.user = decoded;
             next();

@@ -1,90 +1,111 @@
-import  { Request, Response } from "express";
+import mongoose from 'mongoose';
+import { Request, Response } from "express";
 import { contentModel } from "../model/contentModel";
 
 
-export const fetchData = async (req: Request, res: Response) => {
+export const fetchData = async(req:Request, res:Response)=>{
   try {
     const userId = req.user?.userId;
-    if (!userId) {
-      res.status(401).json({ message: "Unauthorized" });
-      return;
+    const data = await contentModel.find({
+      userId: userId
+    });
+    if(data){
+      res.json(data);
     }
-    const allContent = await contentModel.find({ userId });
-
-    if (!allContent || allContent.length === 0) {
-      res.json({ message: "No content found", data: [] });
-      return;
+    else{
+      res.json({ message: "No Content Found" });
     }
-    res.json({ message: "Content found", data: allContent });
   } catch (error) {
-    res.status(500).json({ message: "Server Error", error });
+    console.log(error);
+    res.status(403).json({messagae: "Error in Fetching Data"})
   }
-};
+}
 
-export const postData = async (req: Request, res: Response) => {
+
+export const postData = async(req:Request, res:Response)=>{
   try {
-    const { content, tags } = req.body;
-    console.log(content);
+    console.log("hello");
     const userId = req.user?.userId;
-    if (!content) {
-      res.status(400).json({ mssage: "Content is Required" });
+    console.log("UserID:", userId); 
+    const {content, tags }= req.body;
+    await contentModel.create({
+      userId: userId,
+      content: content,
+      tags: tags
+    })
+    res.json({ message: "Content added" })
+    return;
+  } catch (error) {
+    console.log(error);
+    res.status(403).json({message: "Unable to create Content"})
+    return;
+  }
+}
+export const deleteData = async (req: Request, res: Response) => {
+  try {
+    // Change this line - destructure the id property specifically
+    const { id } = req.params;
+    console.log("Content ID to delete:", id);
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      res.status(400).json({ message: "Invalid content ID" });
       return;
     }
-    let userContent = await contentModel.findOne({ userId });
-    if (!userContent) {
-      userContent = await contentModel.create({
-        userId,
-        content: [content],
-        tags: tags || [],
+
+    const deleteContent = await contentModel.findOneAndDelete({
+      _id: id,  // Use id instead of contentId
+      userId: req.user?.userId 
+    });
+
+    if (!deleteContent) {
+      res.status(404).json({ 
+        message: "Content not found or you don't have permission" 
       });
-    } else {
-      userContent.content.push(content);
-      if (tags) {
-        userContent.tags.push(...tags);
-      }
-      await userContent.save();
+      return;
     }
-    res.status(201).json({
-      message: "Content posted successfully",
-      content: userContent,
+
+    res.status(200).json({
+      message: "Content deleted successfully",
+      deleteContent,
     });
-    return;
+
   } catch (error) {
-    console.error("Error in posting content:", error);
-    res.status(500).json({
-      message: "Error posting content",
-      error,
-    });
-    return;
+    console.error(error);
+    res.status(500).json({ message: "Error deleting content" });
   }
 };
-
-export const deleteData =  async (req: Request, res: Response) => {
+export const checkAuth = (req: Request, res: Response) => {
+  res.status(200).json({ isAuthenticated: true });
+}
+export const updateData = async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.userId;
-    const index = parseInt(req.params.index);
-    const userContent = await contentModel.findOne({ userId });
-    if (!userContent) {
-      res.status(404).json({ message: "No content found for this user" });
-      return;
+    const { id } = req.params; 
+    const { content } = req.body;
+
+    if (!id) {
+       res.status(400).json({ message: "ID is required" });
+       return
     }
-    if (index < 0 || index > userContent.content.length) {
-      res.status(400).json({ message: "Invalid content index" });
-      return;
+
+    const updatedContent = await contentModel.findByIdAndUpdate(
+      id,
+      { content },
+      { new: true }
+    );
+
+    if (!updatedContent) {
+       res.status(404).json({ message: "Content not found" });
+       return
     }
-    userContent.content.splice(index, 1);
-    await userContent.save();
-    res.json({
-      message: "Content deleted successfully",
-      content: userContent,
-    });
-    return;
+
+     res.json(updatedContent);
+     return
   } catch (error) {
-    console.error("Error deleting content:", error);
-    res.status(500).json({
-      message: "Error deleting content",
-      error: error instanceof Error ? error.message : "Unknown error",
+    console.error('Update error:', error);
+     res.status(500).json({ 
+      message: "Server error", 
+      error: error instanceof Error ? error.message : String(error)
     });
-    return;
+    return
   }
 };
