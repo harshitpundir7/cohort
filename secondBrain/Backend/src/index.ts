@@ -3,6 +3,7 @@ import cors from "cors";  // Import CORS package
 import { connectDatabase } from "./config/connectDb";
 import userRoute from "./routes/userRoute";
 import contentRoute from "./routes/contentRoute";
+import previewRoutes from "./routes/previewRoutes";
 
 const app = express();
 
@@ -18,6 +19,7 @@ connectDatabase();
 
 app.use("/user", userRoute);
 app.use("/content", contentRoute);
+app.use("/preview", previewRoutes);
 
 app.listen(3000, () => {
   console.log("Server is running on http://localhost:3000");

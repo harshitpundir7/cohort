@@ -41,11 +41,12 @@ const postData = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         console.log("hello");
         const userId = (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId;
         console.log("UserID:", userId);
-        const { content, tags } = req.body;
+        const { content, tags, preview } = req.body;
         yield contentModel_1.contentModel.create({
             userId: userId,
             content: content,
-            tags: tags
+            tags: tags,
+            preview: preview
         });
         res.json({ message: "Content added" });
         return;
@@ -60,7 +61,6 @@ exports.postData = postData;
 const deleteData = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     try {
-        // Change this line - destructure the id property specifically
         const { id } = req.params;
         console.log("Content ID to delete:", id);
         if (!mongoose_1.default.Types.ObjectId.isValid(id)) {
@@ -68,7 +68,7 @@ const deleteData = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             return;
         }
         const deleteContent = yield contentModel_1.contentModel.findOneAndDelete({
-            _id: id, // Use id instead of contentId
+            _id: id,
             userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.userId
         });
         if (!deleteContent) {

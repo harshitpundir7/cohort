@@ -59,9 +59,15 @@ function Login() {
         { withCredentials: true }
       );
       
-      navigate('/dashboard');
+      const authCheck = await axios.get(
+        "http://localhost:3000/content/check-auth",
+        { withCredentials: true }
+      );
       
-    } catch (error) {
+      if (authCheck.status === 200) {
+        navigate('/dashboard');
+      }} 
+      catch (error) {
       console.error("Error logging in:", error);
       setError("Invalid email or password");
     } finally {

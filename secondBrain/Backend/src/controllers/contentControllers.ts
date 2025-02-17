@@ -21,17 +21,18 @@ export const fetchData = async(req:Request, res:Response)=>{
   }
 }
 
-
 export const postData = async(req:Request, res:Response)=>{
   try {
     console.log("hello");
     const userId = req.user?.userId;
     console.log("UserID:", userId); 
-    const {content, tags }= req.body;
+    const {content, tags,preview }= req.body;
     await contentModel.create({
       userId: userId,
+    
       content: content,
-      tags: tags
+      tags: tags,
+      preview: preview 
     })
     res.json({ message: "Content added" })
     return;
@@ -41,9 +42,9 @@ export const postData = async(req:Request, res:Response)=>{
     return;
   }
 }
+
 export const deleteData = async (req: Request, res: Response) => {
   try {
-    // Change this line - destructure the id property specifically
     const { id } = req.params;
     console.log("Content ID to delete:", id);
 
@@ -53,7 +54,7 @@ export const deleteData = async (req: Request, res: Response) => {
     }
 
     const deleteContent = await contentModel.findOneAndDelete({
-      _id: id,  // Use id instead of contentId
+      _id: id, 
       userId: req.user?.userId 
     });
 
@@ -73,10 +74,12 @@ export const deleteData = async (req: Request, res: Response) => {
     console.error(error);
     res.status(500).json({ message: "Error deleting content" });
   }
-};
+}
+
 export const checkAuth = (req: Request, res: Response) => {
   res.status(200).json({ isAuthenticated: true });
 }
+
 export const updateData = async (req: Request, res: Response) => {
   try {
     const { id } = req.params; 
@@ -108,4 +111,4 @@ export const updateData = async (req: Request, res: Response) => {
     });
     return
   }
-};
+}
