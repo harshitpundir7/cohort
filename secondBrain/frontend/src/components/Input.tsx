@@ -81,7 +81,7 @@ function Input({ onContentAdded }: InputProps) {
               `${API_URL}/preview/youtube/${videoId}`,
               { credentials: 'include' }
             );
-            
+             
             if (!response.ok) {
               throw new Error(`HTTP error! status: ${response.status}`);
             }
