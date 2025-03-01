@@ -12,7 +12,6 @@ function App() {
   const message = inputRef.current.value;
   //@ts-ignore
   socket.send(message)
-    
   }
   useEffect(()=>{
     const ws = new WebSocket('ws://localhost:8080')
@@ -26,15 +25,13 @@ function App() {
     }
     ws.onmessage = (message)=>{ 
       console.log(message.data)
-    } 
-
+    }
   },[])
   return (
     <div>
-      <input ref={inputRef} type="text" placeholder='message' />
+      <input ref={inputRef} type="text" placeholder='message'/>
       <button onClick={sendMessage}>Send</button>
     </div>
   )
 }
-
 export default App
